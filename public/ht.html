@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Private Friends Lounge</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="chat-container">
+    <header>
+      <h2>🔒 Private Lounge</h2>
+    </header>
+    <div id="messages"></div>
+    <form id="chat-form">
+      <input id="username" type="text" placeholder="Your Name" required />
+      <input id="message" type="text" placeholder="Type a message..." required autocomplete="off" />
+      <button type="submit">Send</button>
+    </form>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    const form = document.getElementById('chat-form');
+    const msgInput = document.getElementById('message');
+    const nameInput = document.getElementById('username');
+    const messages = document.getElementById('messages');
+
+    function appendMessage(data) {
+      const item = document.createElement('div');
+      item.classList.add('msg');
+      item.innerHTML = `<strong>${data.sender}:</strong> ${data.text}`;
+      messages.appendChild(item);
+      messages.scrollTop = messages.scrollHeight;
+    }
+
+    socket.on('load history', (history) => {
+      messages.innerHTML = '';
+      history.forEach(appendMessage);
+    });
+
+    socket.on('chat message', appendMessage);
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (msgInput.value && nameInput.value) {
+        socket.emit('chat message', {
+          sender: nameInput.value,
+          text: msgInput.value
+        });
+        msgInput.value = '';
+      }
+    });
+  </script>
+</body>
+</html>
