@@ -19,7 +19,9 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
   background-color: var(--apple-bg);
   color: var(--apple-text-dark);
+  /* Use dvh (dynamic viewport height) for perfect mobile fitting */
   height: 100vh;
+  height: 100dvh;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -30,22 +32,31 @@ body {
 #chat-wrapper {
   width: 100%;
   max-width: 480px;
-  height: 92vh;
+  /* Fills mobile screen perfectly without overflowing */
+  height: 100vh;
+  height: 100dvh;
   background: var(--apple-surface);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-radius: 24px;
-  border: 1px solid var(--apple-border);
-  box-shadow: 0 12px 32px var(--apple-shadow);
   display: flex;
   flex-direction: column;
   overflow: hidden;
   position: relative;
 }
 
+/* Desktop curve refinement */
+@media (min-width: 500px) {
+  #chat-wrapper {
+    height: 92dvh;
+    border-radius: 24px;
+    border: 1px solid var(--apple-border);
+    box-shadow: 0 12px 32px var(--apple-shadow);
+  }
+}
+
 /* Header */
 header {
-  padding: 16px 20px;
+  padding: 14px 20px;
   background: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -84,7 +95,7 @@ header span {
 
 /* iMessage Bubbles */
 .message {
-  max-width: 72%;
+  max-width: 75%;
   padding: 10px 16px;
   border-radius: 20px;
   font-size: 15px;
@@ -101,7 +112,7 @@ header span {
   color: #8e8e93;
 }
 
-/* Sent Messages (Blue iMessage) */
+/* Sent Messages (Blue) */
 .message.sent {
   align-self: flex-end;
   background: var(--apple-sent-blue);
@@ -114,7 +125,7 @@ header span {
   text-align: right;
 }
 
-/* Received Messages (Light Grey) */
+/* Received Messages (Grey) */
 .message.received {
   align-self: flex-start;
   background: var(--apple-received);
@@ -122,10 +133,12 @@ header span {
   border-bottom-left-radius: 4px;
 }
 
-/* Input Bar */
+/* Input Bar - Mobile Safe Area Fix */
 #chat-form {
   padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.9);
+  /* Adds bottom padding for modern iPhone home bar */
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border-top: 1px solid var(--apple-border);
@@ -141,14 +154,12 @@ header span {
   border: 1px solid var(--apple-border);
   background-color: #ffffff !important;
   color: #000000 !important;
-  font-size: 15px;
+  font-size: 16px; /* Prevents auto-zoom on mobile safari */
   outline: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 #chat-input:focus {
   border-color: var(--apple-sent-blue);
-  box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.2);
 }
 
 /* Send Button */
@@ -164,15 +175,6 @@ header span {
   align-items: center;
   cursor: pointer;
   font-weight: bold;
-  transition: transform 0.15s ease, background-color 0.2s ease;
-}
-
-#send-btn:hover {
-  transform: scale(1.05);
-}
-
-#send-btn:active {
-  transform: scale(0.95);
 }
 
 /* Animations */
