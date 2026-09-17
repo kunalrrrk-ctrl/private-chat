@@ -3,55 +3,68 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Private Friends Lounge</title>
-  <link rel="stylesheet" href="signal.css">
+  <title>iMessage Private Chat</title>
+  <link rel="stylesheet" href="/signal.css">
 </head>
 <body>
-  <div id="chat-container">
+  <div id="chat-wrapper">
     <header>
-      <h2>🔒 Private Lounge</h2>
+      <h2>Private Chat</h2>
+      <span>iMessage Style</span>
     </header>
+
     <div id="messages"></div>
+
     <form id="chat-form">
-      <input id="username" type="text" placeholder="Your Name" required />
-      <input id="message" type="text" placeholder="Type a message..." required autocomplete="off" />
-      <button type="submit">Send</button>
+      <input id="chat-input" type="text" placeholder="iMessage" autocomplete="off" required />
+      <button id="send-btn" type="submit">↑</button>
     </form>
   </div>
 
   <script src="/socket.io/socket.io.js"></script>
   <script>
     const socket = io();
-    const form = document.getElementById('chat-form');
-    const msgInput = document.getElementById('message');
-    const nameInput = document.getElementById('username');
     const messages = document.getElementById('messages');
+    const form = document.getElementById('chat-form');
+    const input = document.getElementById('chat-input');
+
+    // Prompt for user's name
+    const sender = prompt("Enter your name:") || "Anonymous";
+
+    // Load message history
+    socket.on('load history', (history) => {
+      messages.innerHTML = '';
+      history.forEach(msg => appendMessage(msg));
+    });
+
+    // Receive message
+    socket.on('chat message', (msg) => {
+      appendMessage(msg);
+    });
+
+    // Send message
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (input.value.trim()) {
+        const msgData = { sender, text: input.value.trim() };
+        socket.emit('chat message', msgData);
+        input.value = '';
+      }
+    });
 
     function appendMessage(data) {
       const item = document.createElement('div');
-      item.classList.add('msg');
-      item.innerHTML = `<strong>${data.sender}:</strong> ${data.text}`;
+      const isMe = data.sender === sender;
+      item.classList.add('message', isMe ? 'sent' : 'received');
+
+      item.innerHTML = `
+        ${!isMe ? `<div class="sender-name">${data.sender}</div>` : ''}
+        <div>${data.text}</div>
+      `;
+
       messages.appendChild(item);
       messages.scrollTop = messages.scrollHeight;
     }
-
-    socket.on('load history', (history) => {
-      messages.innerHTML = '';
-      history.forEach(appendMessage);
-    });
-
-    socket.on('chat message', appendMessage);
-
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
-      if (msgInput.value && nameInput.value) {
-        socket.emit('chat message', {
-          sender: nameInput.value,
-          text: msgInput.value
-        });
-        msgInput.value = '';
-      }
-    });
   </script>
 </body>
 </html>
